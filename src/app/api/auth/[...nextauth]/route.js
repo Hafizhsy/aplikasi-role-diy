@@ -13,23 +13,31 @@ export const authOptions = {
 
     callbacks: {
     async jwt({ token, account, profile }) {
-        if (account) {
-        token.id_token = account.id_token;
-        const clientID = process.env.KEYCLOAK_CLIENT_ID;
-        const roles = profile?.resource_access?.[clientID]?.roles ||
-                    account?.roles || [];
-        token.roles = roles; 
+        if (account && profile) {
+            token.id_token = account.id_token;
+            const clientID = process.env.KEYCLOAK_CLIENT_ID;
+
+            // 1. Ambil roles dari berbagai sumber (Client Roles & Account Roles)
+            const clientRoles = profile?.resource_access?.[clientID]?.roles || [];
+            const accountRoles = account?.roles || [];
+            
+            // 2. Gabungkan semua role ke dalam satu array
+            const allRoles = [...clientRoles, ...accountRoles];
+
+            // 3. HAPUS DUPLIKAT dengan Set, lalu ubah kembali ke Array
+            token.roles = [...new Set(allRoles)]; 
+
+            token.wilayah = profile?.wilayah || "umum"; 
         }
         return token;
     },
     async session({ session, token }) {
-        // Pindahkan id_token dari 'tiket' ke 'session' agar bisa dibaca di halaman UI
         session.id_token = token.id_token;
         session.user.roles = token.roles || [];
+        session.user.wilayah = token.wilayah || "umum";
         return session;
+        },
     },
-    },
-
 }
 
 const handler = NextAuth(authOptions);
