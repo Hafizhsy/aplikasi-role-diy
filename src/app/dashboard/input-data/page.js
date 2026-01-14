@@ -4,6 +4,9 @@ import { useSession } from "next-auth/react";
 
 export default function InputLaporan() {
   const { data: session } = useSession();
+  const roles = session?.user?.roles || [];
+  const isAdmin = roles.includes("admin");
+  const userWilayah = session?.user?.wilayah || "umum";
   const [formData, setFormData] = useState({
     judul: "",
     kategori: "Pelayanan Publik",
@@ -19,7 +22,8 @@ export default function InputLaporan() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...formData,
-        userEmail: session?.user?.email // Mengambil email dari session Keycloak
+        userEmail: session?.user?.email,// Mengambil email dari session Keycloak
+        wilayah: userWilayah,
       }),
     });
 
@@ -92,6 +96,14 @@ export default function InputLaporan() {
           >
             Kirim Laporan
           </button>
+          {isAdmin && (
+            <div className="mt-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded">
+              <h3 className="text-sm font-bold text-amber-800 mb-2">Catatan untuk Admin:</h3>
+              <p className="text-sm text-amber-700">
+                Sebagai admin, Anda dapat mengakses semua laporan dari berbagai wilayah. Pastikan untuk meninjau laporan secara berkala dan memberikan umpan balik kepada operator di lapangan.
+              </p>
+            </div>
+          )}
         </form>
       </div>
     </div>

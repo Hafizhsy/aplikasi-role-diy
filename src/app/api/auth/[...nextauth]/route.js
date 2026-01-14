@@ -15,6 +15,7 @@ export const authOptions = {
     async jwt({ token, account, profile }) {
         if (account && profile) {
             token.id_token = account.id_token;
+            token.accessToken = account.access_token;   
             const clientID = process.env.KEYCLOAK_CLIENT_ID;
 
             // 1. Ambil roles dari berbagai sumber (Client Roles & Account Roles)
@@ -33,6 +34,7 @@ export const authOptions = {
     },
     async session({ session, token }) {
         session.id_token = token.id_token;
+        session.accessToken = token.accessToken;
         session.user.roles = token.roles || [];
         session.user.wilayah = token.wilayah || "umum";
         return session;

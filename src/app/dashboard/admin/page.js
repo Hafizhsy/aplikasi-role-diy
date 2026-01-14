@@ -1,40 +1,88 @@
-export default function AdminPage() {
+"use client";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+
+export default function ManajemenPengguna() {
+  const { data: session } = useSession();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fungsi untuk ambil data dari API yang kita buat tadi
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("/api/admin/users");
+        const data = await res.json();
+        setUsers(data);
+      } catch (err) {
+        console.error("Gagal load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleEdit = (userId) => {
+    alert("Membuka form edit untuk ID: " + userId);
+    // Di sini nanti kita buatkan Modal/Popup Edit
+  };
+
+  const handleTambah = () => {
+    alert("Membuka form tambah user baru");
+  };
+
+  if (loading) return <div className="p-6">Memuat data pegawai...</div>;
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Manajemen Pengguna</h1>
-          <p className="text-sm text-slate-500">Kelola akses dan otoritas akun di lingkungan Pemerintah DIY.</p>
+          <h1 className="text-2xl font-bold text-slate-800">👤 Manajemen Pengguna</h1>
+          <p className="text-slate-500 text-sm">Kelola hak akses dan wilayah kerja pegawai secara real-time.</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-          + Tambah Pengguna
+        <button 
+          onClick={handleTambah}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700"
+        >
+          + Tambah User
         </button>
       </div>
 
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-400 text-xs font-bold uppercase">Total User</p>
-          <p className="text-3xl font-bold text-slate-800 mt-2">1,284</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-400 text-xs font-bold uppercase">User Aktif</p>
-          <p className="text-3xl font-bold text-green-600 mt-2">1,120</p>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-          <p className="text-slate-400 text-xs font-bold uppercase">Admin</p>
-          <p className="text-3xl font-bold text-blue-600 mt-2">12</p>
-        </div>
-      </div>
-
-      {/* Placeholder Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50">
-          <h3 className="font-bold text-slate-700">Daftar Akun Terbaru</h3>
-        </div>
-        <div className="p-8 text-center text-slate-400 italic">
-          Data sedang dimuat dari server Keycloak...
-        </div>
+        <table className="w-full text-left">
+          <thead className="bg-slate-50 border-b border-slate-200">
+            <tr>
+              <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Nama & Email</th>
+              <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Wilayah</th>
+              <th className="p-4 text-xs font-semibold text-slate-500 uppercase">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+  {loading ? (
+    <tr><td colSpan="3" className="p-4 text-center">Sedang memuat data...</td></tr>
+  ) : users.length > 0 ? (
+    users.map((u) => (
+      <tr key={u.id} className="hover:bg-slate-50 transition">
+        <td className="p-4">
+          <p className="text-sm font-medium text-slate-800">{u.firstName || u.username} {u.lastName || ""}</p>
+          <p className="text-xs text-slate-500">{u.email}</p>
+        </td>
+        <td className="p-4 text-sm text-slate-600 capitalize">
+          {u.attributes?.wilayah?.[0] || "Umum"}
+        </td>
+        <td className="p-4">
+          <button onClick={() => handleEdit(u.id)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            Edit
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr><td colSpan="3" className="p-4 text-center">Tidak ada data user ditemukan.</td></tr>
+  )}
+</tbody>
+        </table>
       </div>
     </div>
   );
