@@ -9,6 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
+  if (!session.accessToken) {
+    console.error("DEBUG ERROR: Access token tidak ditemukan atau expired");
+    return NextResponse.json({ error: "Access token tidak ditemukan" }, { status: 401 });
+  }
  try {
   // Pastikan URL realm-nya benar (di gambar kamu realm-nya adalah 'pemda')
   const url = "http://localhost:8080/admin/realms/pemda/users";
