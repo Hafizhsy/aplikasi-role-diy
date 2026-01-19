@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import { useCallback } from "react";
 
 export const authOptions = {
     providers: [
@@ -33,6 +32,7 @@ export const authOptions = {
         return token;
     },
     async session({ session, token }) {
+        session.user.id = token.sub;
         session.id_token = token.id_token;
         session.accessToken = token.accessToken;
         session.user.roles = token.roles || [];
@@ -40,7 +40,19 @@ export const authOptions = {
         return session;
         },
     },
-}
+    events: {
+    async signOut({ token }) {  
+      const issuerUrl = process.env.KEYCLOAK_ISSUER; 
+      const logOutUrl = `${issuerUrl}/protocol/openid-connect/logout?id_token_hint=${token.id_token}&post_logout_redirect_uri=${process.env.NEXTAUTH_URL}`;
+      
+      try {
+        await fetch(logOutUrl);
+      } catch (e) {
+        console.error("Gagal membersihkan sesi Keycloak:", e);
+      }
+    },
+  }
+};
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

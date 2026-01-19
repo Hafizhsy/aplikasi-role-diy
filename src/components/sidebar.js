@@ -2,11 +2,26 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 export default function Sidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const roles = session?.user?.roles || [];
+
+  const handleLogout = async () => {
+    const idToken = session?.id_token;
+    const issuerUrl = "http://localhost:8080/realms/pemda"; 
+    const postLogoutUrl = "http://localhost:3000";
+
+    await signOut({ redirect: false });
+
+    if (idToken) {
+      window.location.href = `${issuerUrl}/protocol/openid-connect/logout?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(postLogoutUrl)}`;
+    } else {
+      // Fallback jika token hilang, langsung ke logout umum
+      window.location.href = postLogoutUrl;}
+  };
 
   const menuItems = [
     { name: "Dashboard Utama", href: "/dashboard", icon: "📊", roles: ["admin", "operator"] },
@@ -51,17 +66,34 @@ export default function Sidebar() {
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-slate-800 bg-slate-900/50">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">
+ <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+      <div className="flex items-center justify-between bg-slate-800/40 p-2 rounded-xl border border-slate-700/50">
+        <div className="flex items-center gap-2 overflow-hidden flex-1">
+          <div className="w-8 h-8 min-w-[32px] rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-inner">
             {session?.user?.name?.charAt(0)}
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-bold text-white truncate">{session?.user?.name}</p>
-            <p className="text-[10px] text-slate-500 truncate capitalize">{roles[0] || "User"}</p>
+            <p className="text-[11px] font-bold text-white truncate w-24 leading-tight">
+              {session?.user?.name}
+            </p>
+            <p className="text-[9px] text-blue-400 font-medium uppercase tracking-tighter">
+              {roles[0] || "User"}
+            </p>
           </div>
         </div>
+
+        {/* TOMBOL LOGOUT SEJAJAR NAMA */}
+        <button
+          onClick={handleLogout}
+          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-all group ml-2"
+          title="Keluar"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+          </svg>
+        </button>
       </div>
+    </div>
     </div>
   );
 }
