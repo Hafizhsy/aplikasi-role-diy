@@ -3,6 +3,14 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { 
+  LayoutDashboard,
+  FileText,
+  Users,
+  ShieldCheck,
+  BarChart3,
+  LogOut  
+} from "lucide-react";
 
 export default function Sidebar() {
   const { data: session } = useSession();
@@ -24,12 +32,19 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    { name: "Dashboard Utama", href: "/dashboard", icon: "📊", roles: ["admin", "operator"] },
-    { name: "Input Laporan", href: "/dashboard/input-data", icon: "📝", roles: ["admin", "operator"] },
-    { name: "Manajemen Pengguna", href: "/dashboard/admin", icon: "👤", roles: ["admin"] },
-    { name: "Audit Log Sistem", href: "/dashboard/audit", icon: "🛡️", roles: ["admin"] },
-    { name: "Rekap Laporan", href: "/dashboard/rekap", icon: "📁", roles: ["admin", "operator"] },
-  ];
+  { name: 'Dashboard Utama', icon: <LayoutDashboard size={18}/>, path: '/dashboard',roles: ['admin', 'operator'] },
+  { name: 'Input Laporan', icon: <FileText size={18}/>, path: '/dashboard/input-data', roles: ['admin', 'operator'] },
+  { name: 'Manajemen Pengguna', icon: <Users size={18}/>, path: '/dashboard/admin', roles: ['admin'] },
+  { name: 'Audit Log Sistem', icon: <ShieldCheck size={18}/>, path: '/dashboard/audit', roles: ['admin'] },
+  { name: 'Rekap Laporan', icon: <BarChart3 size={18}/>, path: '/dashboard/rekap', roles: ['admin', 'operator'] },
+];
+  // const menuItems = [
+  //   { name: "Dashboard Utama", href: "/dashboard", icon: "📊", roles: ["admin", "operator"] },
+  //   { name: "Input Laporan", href: "/dashboard/input-data", icon: "📝", roles: ["admin", "operator"] },
+  //   { name: "Manajemen Pengguna", href: "/dashboard/admin", icon: "👤", roles: ["admin"] },
+  //   { name: "Audit Log Sistem", href: "/dashboard/audit", icon: "🛡️", roles: ["admin"] },
+  //   { name: "Rekap Laporan", href: "/dashboard/rekap", icon: "📁", roles: ["admin", "operator"] },
+  // ];
 
   return (
     <div className="w-64 bg-slate-900 text-slate-300 min-h-screen p-0 flex flex-col shadow-xl">
@@ -45,18 +60,17 @@ export default function Sidebar() {
             const hasAccess = item.roles.some(role => roles.includes(role));
             if (!hasAccess) return null;
 
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.path;
 
             return (
-              <li key={item.href}>
+              <li key={item.path}>
                 <Link 
-                  href={item.href}
+                  href={item.path}
                   className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${
                     isActive 
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50" 
                       : "hover:bg-slate-800 hover:text-white"
-                  }`}
-                >
+                  }`}>
                   <span>{item.icon}</span>
                   <span className="text-sm font-medium">{item.name}</span>
                 </Link>

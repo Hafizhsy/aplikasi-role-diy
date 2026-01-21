@@ -46,11 +46,20 @@ export default function Home() {
               <p className="mb-3"><strong>Email:</strong> {session.user.email}</p>
               <p className="text-sm text-gray-500 uppercase tracking-wider font-bold border-t pt-2">Roles Anda:</p>
               {/* Ini adalah bagian untuk mengecek apakah Role sudah masuk atau belum */}
-              <pre className="text-xs bg-black text-green-400 p-3 mt-2 rounded overflow-x-auto">
-                {JSON.stringify(session.user.roles || "Role tidak ditemukan", null, 2)}
-              </pre>
+              <div className="grid grid-cols-1 gap-2 mt-3">
+  {session.user.roles?.map((role, index) => (
+    <div key={index} className="flex items-center p-2 rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="p-2 bg-slate-100 rounded-md mr-3">
+        {role === 'admin' ? '🔐' : '👤'}
+      </div>
+      <div>
+        <p className="text-[10px] font-black uppercase text-slate-400 leading-none">Level Akses</p>
+        <p className="text-sm font-bold text-slate-700 capitalize">{role}</p>
+      </div>
+    </div>
+  ))}
+</div>
             </div>
-
             <div className="mt-6 flex flex-col gap-2">
               <button 
                 onClick={() => window.location.href = "/dashboard"}

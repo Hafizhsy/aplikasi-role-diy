@@ -171,15 +171,25 @@ export default function ManajemenPengguna() {
                     {u.role}
                   </span>
                 </td>
-                <td className="p-4 text-center">
-                  <button onClick={() => handleEdit(u)} className="text-blue-600 hover:text-blue-800 text-xs font-black uppercase tracking-tighter hover:underline underline-offset-4 transition">
-                    Edit Akses
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(u.id, u.username)} 
-                    className="text-red-500 hover:text-red-700 text-xs font-black uppercase tracking-tighter hover:underline underline-offset-4 transition">
-                    Hapus
-                  </button>
+                 <td className="p-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    {/* Tombol Edit */}
+                    <button 
+                      onClick={() => handleEdit(u)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
+                      title="Edit Akses"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
+                    {/* Tombol Hapus */}
+                    <button 
+                      onClick={() => handleDelete(u.id, u.username)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors group"
+                      title="Hapus Pengguna"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
