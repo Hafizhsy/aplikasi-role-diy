@@ -80,22 +80,25 @@ export default function Sidebar() {
         </ul>
       </nav>
 
- <div className="p-4 border-t border-slate-800 bg-slate-900/50">
-      <div className="flex items-center justify-between bg-slate-800/40 p-2 rounded-xl border border-slate-700/50">
-        <div className="flex items-center gap-2 overflow-hidden flex-1">
-          <div className="w-8 h-8 min-w-[32px] rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-inner">
-            {session?.user?.name?.charAt(0)}
-          </div>
-          <div className="overflow-hidden">
-            <p className="text-[11px] font-bold text-white truncate w-24 leading-tight">
-              {session?.user?.name}
-            </p>
-            <p className="text-[9px] text-blue-400 font-medium uppercase tracking-tighter">
-              {roles[0] || "User"}
-            </p>
-          </div>
-        </div>
-
+ <div className="mt-auto p-4 border-t border-slate-800 bg-slate-900/80">
+  <div className="flex items-center justify-between bg-slate-800/40 p-2 rounded-xl border border-slate-700/50">
+    <div className="flex items-center gap-2 overflow-hidden flex-1">
+      {/* Avatar Bulat Biru */}
+      <div className="w-8 h-8 min-w-[32px] rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-inner uppercase">
+        {session?.user?.name?.charAt(0) || "U"}
+      </div>
+      
+      {/* Informasi Teks */}
+      <div className="overflow-hidden">
+        <p className="text-[11px] font-bold text-white truncate w-24 leading-tight">
+          {session?.user?.name || "Nama Pengguna"}
+        </p>
+        <p className="text-[9px] text-blue-400 font-medium uppercase tracking-tighter">
+          {/* Cek jika roles ada, ambil yang pertama */}
+          {session?.user?.roles?.[0] || "Operator"}
+        </p>
+      </div>
+    </div>
         {/* TOMBOL LOGOUT SEJAJAR NAMA */}
         <button
           onClick={handleLogout}
