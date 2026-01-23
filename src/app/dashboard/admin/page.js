@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { Pencil, Trash2, Mail, MapPin, Shield, User } from "lucide-react";
 
 const wilayahLabels = {
   jogja: "D.I. Yogyakarta",
@@ -141,62 +142,77 @@ export default function ManajemenPengguna() {
           + Tambah User
         </button>
       </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50/80 border-b border-slate-200">
-            <tr>
-              <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest">Nama & Email</th>
-              <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest">Wilayah</th>
-              <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest">Role</th>
-              <th className="p-4 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {users.map((u) => (
-              <tr key={u.id} className="hover:bg-slate-50 transition">
-                <td className="p-4">
-                  <p className="text-sm font-bold text-slate-800">{u.firstName || u.username} {u.lastName || ""}</p>
-                  <p className="text-[11px] text-slate-400 font-medium">{u.email}</p>
-                </td>
-                <td className="p-4">
-                  <span className="px-2.5 py-1 bg-slate-100 rounded-md text-[10px] font-bold text-slate-600 uppercase border border-slate-200">
-                    {wilayahLabels[u.wilayah] || u.wilayah}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
-                    u.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                  }`}>
-                    {u.role}
-                  </span>
-                </td>
-                 <td className="p-4 text-right">
-                  <div className="flex justify-end gap-2">
-                    {/* Tombol Edit */}
-                    <button 
-                      onClick={() => handleEdit(u)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group"
-                      title="Edit Akses"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                    </button>
-                    {/* Tombol Hapus */}
-                    <button 
-                      onClick={() => handleDelete(u.id, u.username)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors group"
-                      title="Hapus Pengguna"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                    </button>
+<div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+  <div className="overflow-x-auto">
+    <table className="w-full text-left border-collapse">
+      <thead>
+        <tr className="bg-slate-50/80 border-b border-slate-200">
+          <th className="p-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Data Pegawai</th>
+          <th className="p-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Penempatan</th>
+          <th className="p-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Otoritas</th>
+          <th className="p-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.15em] text-center">Aksi</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-slate-100">
+        {users.map((u) => (
+          <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
+            <td className="p-5">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 border border-slate-300">
+                  <User size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-800 leading-tight">
+                    {u.firstName || u.username} {u.lastName || ""}
+                  </p>
+                  <div className="flex items-center text-[11px] text-slate-400 mt-0.5 font-medium">
+                    <Mail size={10} className="mr-1" /> {u.email}
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
+                </div>
+              </div>
+            </td>
+            <td className="p-5 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50/50 border border-blue-100 rounded-lg text-blue-700">
+                <MapPin size={13} />
+                <span className="text-xs font-bold uppercase tracking-tight">
+                  {wilayahLabels[u.wilayah] || u.wilayah}
+                </span>
+              </div>
+            </td>
+            <td className="p-5">
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border ${
+                u.role === 'admin' 
+                  ? 'bg-violet-50 text-violet-700 border-violet-200 shadow-sm shadow-violet-100' 
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-sm shadow-emerald-100'
+              }`}>
+                <Shield size={12} />
+                <span className="text-[10px] font-black uppercase tracking-wider">{u.role}</span>
+              </div>
+            </td>
+            <td className="p-5">
+              <div className="flex items-center justify-center gap-3">
+                <button 
+                  onClick={() => handleEdit(u)}
+                  className="flex items-center justify-center h-9 w-9 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all duration-300 shadow-sm shadow-blue-100 active:scale-90"
+                  title="Edit"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(u.id, u.username)}
+                  className="flex items-center justify-center h-9 w-9 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition-all duration-300 shadow-sm shadow-rose-100 active:scale-90"
+                  title="Hapus"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
       {/* --- MODAL TAMBAH USER --- */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
