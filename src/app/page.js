@@ -1,8 +1,60 @@
 "use client";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const [qrLogin, setQrLogin] = useState(null);
+  const [qrStatus, setQrStatus] = useState("loading");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qrToken = params.get("qr_login_token");
+
+    if (!qrToken || session) return;
+
+    const loginWithQr = async () => {
+      const res = await fetch(`/api/auth/qr-login/verify?token=${encodeURIComponent(qrToken)}`);
+      const data = await res.json();
+
+      if (data.valid) {
+        await signIn("keycloak", { callbackUrl: "/dashboard" });
+      } else {
+        setQrStatus("expired");
+      }
+    };
+
+    loginWithQr();
+  }, [session]);
+
+  useEffect(() => {
+    if (session) return;
+
+    let refreshTimer;
+
+    const loadQr = async () => {
+      setQrStatus("loading");
+      try {
+        const res = await fetch("/api/auth/qr-login");
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Gagal membuat QR login.");
+        }
+
+        setQrLogin(data);
+        setQrStatus("ready");
+        refreshTimer = window.setTimeout(loadQr, (data.expiresIn - 10) * 1000);
+      } catch (error) {
+        setQrStatus("error");
+      }
+    };
+
+    loadQr();
+
+    return () => window.clearTimeout(refreshTimer);
+  }, [session]);
+
   const handlelogout = async() => {
 
   const realm = "pemda";
@@ -36,6 +88,33 @@ export default function Home() {
             >
               LOGIN DENGAN KEYCLOAK
             </button>
+            <div className="mt-6 border-t border-gray-100 pt-6">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Login dengan QR
+              </p>
+              <div className="mt-3 flex justify-center">
+                {qrStatus === "ready" && qrLogin?.qrImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={qrLogin.qrImageUrl}
+                    alt="QR login Keycloak"
+                    className="h-[220px] w-[220px] rounded-lg border border-gray-200 bg-white p-2"
+                  />
+                ) : (
+                  <div className="flex h-[220px] w-[220px] items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-500">
+                    {qrStatus === "error" ? "QR belum tersedia" : "Membuat QR..."}
+                  </div>
+                )}
+              </div>
+              <p className="mt-3 text-xs text-gray-500">
+                Scan QR untuk membuka login provider. Token QR otomatis berganti setiap 2 menit.
+              </p>
+              {qrStatus === "expired" && (
+                <p className="mt-2 text-xs font-semibold text-red-600">
+                  Token QR sudah kedaluwarsa. Silakan scan QR baru.
+                </p>
+              )}
+            </div>
           </div>
         ) : (
           <div>

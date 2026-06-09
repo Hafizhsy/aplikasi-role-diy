@@ -1,7 +1,15 @@
 import NextAuth from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
+import {
+    getUserRoles,
+    getUserWilayah,
+    refreshKeycloakAccessToken,
+} from "@/lib/auth";
 
 export const authOptions = {
+    session: {
+        strategy: "jwt",
+    },
     providers: [
         KeycloakProvider({
             clientId: process.env.KEYCLOAK_CLIENT_ID,
@@ -12,29 +20,32 @@ export const authOptions = {
 
     callbacks: {
     async jwt({ token, account, profile }) {
-        if (account && profile) {
+        if (account) {
             token.id_token = account.id_token;
-            token.accessToken = account.access_token;   
-            const clientID = process.env.KEYCLOAK_CLIENT_ID;
-
-            // 1. Ambil roles dari berbagai sumber (Client Roles & Account Roles)
-            const clientRoles = profile?.resource_access?.[clientID]?.roles || [];
-            const accountRoles = account?.roles || [];
-            
-            // 2. Gabungkan semua role ke dalam satu array
-            const allRoles = [...clientRoles, ...accountRoles];
-
-            // 3. HAPUS DUPLIKAT dengan Set, lalu ubah kembali ke Array
-            token.roles = [...new Set(allRoles)]; 
-
-            token.wilayah = profile?.wilayah || "umum"; 
+            token.accessToken = account.access_token;
+            token.refreshToken = account.refresh_token;
+            token.accessTokenExpires = account.expires_at
+                ? account.expires_at * 1000
+                : Date.now() + Number(account.expires_in || 0) * 1000;
+            token.roles = getUserRoles(profile, account);
+            token.wilayah = getUserWilayah(profile);
         }
+
+        if (Date.now() < (token.accessTokenExpires || 0) - 60_000) {
+            return token;
+        }
+
+        if (token.refreshToken) {
+            return refreshKeycloakAccessToken(token);
+        }
+
         return token;
     },
     async session({ session, token }) {
         session.user.id = token.sub;
         session.id_token = token.id_token;
         session.accessToken = token.accessToken;
+        session.error = token.error;
         session.user.roles = token.roles || [];
         session.user.wilayah = token.wilayah || "umum";
         return session;
@@ -43,7 +54,7 @@ export const authOptions = {
     events: {
     async signOut({ token }) {  
       const issuerUrl = process.env.KEYCLOAK_ISSUER; 
-      const logOutUrl = `${issuerUrl}/protocol/openid-connect/logout?id_token_hint=${token.id_token}&post_logout_redirect_uri=${process.env.NEXTAUTH_URL}`;
+      const logOutUrl = `${issuerUrl}/protocol/openid-connect/logout?id_token_hint=${token.id_token}&post_logout_redirect_uri=${encodeURIComponent(process.env.NEXTAUTH_URL)}`;
       
       try {
         await fetch(logOutUrl);

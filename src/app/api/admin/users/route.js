@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-const realm = "pemda";
-const clientUUID = "3a117525-0efc-4396-9851-0616ec7010a9";
-const baseUrl = `http://localhost:8080/admin/realms/${realm}`;
+import { getKeycloakAdminConfig } from "@/lib/auth";
+
+const { adminBaseUrl, clientUuid } = getKeycloakAdminConfig();
 
 // --- FUNGSI AMBIL DATA USER (GET) ---
 export async function GET() {
@@ -13,13 +13,17 @@ export async function GET() {
 
   try {
     const headers = { Authorization: `Bearer ${session.accessToken}` };
-    const response = await fetch(`${baseUrl}/users`, { headers });
+    const response = await fetch(`${adminBaseUrl}/users`, { headers });
+    if (!response.ok) {
+      const errorText = await response.text();
+      return NextResponse.json({ error: `Keycloak: ${errorText}` }, { status: response.status });
+    }
     const users = await response.json();
 
     const fullData = await Promise.all(
       users.map(async (user) => {
         try {
-          const roleRes = await fetch(`${baseUrl}/users/${user.id}/role-mappings/clients/${clientUUID}`, { headers });
+          const roleRes = await fetch(`${adminBaseUrl}/users/${user.id}/role-mappings/clients/${clientUuid}`, { headers });
           const roles = await roleRes.json();
           const isAdmin = roles.some(r => r.name.toLowerCase() === 'admin');
           return {
@@ -48,7 +52,7 @@ export async function POST(req) {
     const headers = { Authorization: `Bearer ${session.accessToken}`, "Content-Type": "application/json" };
 
     // 1. Create User
-    const userRes = await fetch(`${baseUrl}/users`, {
+    const userRes = await fetch(`${adminBaseUrl}/users`, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -65,15 +69,15 @@ export async function POST(req) {
     if (!userRes.ok) throw new Error("Gagal create user");
 
     // 2. Get User ID Baru
-    const getNewUser = await fetch(`${baseUrl}/users?username=${body.username}`, { headers });
+    const getNewUser = await fetch(`${adminBaseUrl}/users?username=${encodeURIComponent(body.username)}`, { headers });
     const newUser = await getNewUser.json();
     const newUserId = newUser[0].id;
 
     // 3. Assign Role
-    const roleDetailRes = await fetch(`${baseUrl}/clients/${clientUUID}/roles/${body.role}`, { headers });
+    const roleDetailRes = await fetch(`${adminBaseUrl}/clients/${clientUuid}/roles/${body.role}`, { headers });
     const roleDetail = await roleDetailRes.json();
 
-    await fetch(`${baseUrl}/users/${newUserId}/role-mappings/clients/${clientUUID}`, {
+    await fetch(`${adminBaseUrl}/users/${newUserId}/role-mappings/clients/${clientUuid}`, {
       method: "POST",
       headers,
       body: JSON.stringify([{ id: roleDetail.id, name: roleDetail.name }]),

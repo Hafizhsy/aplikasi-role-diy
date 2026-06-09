@@ -12,6 +12,7 @@ export default function InputLaporan() {
     kategori: "Pelayanan Publik",
     deskripsi: "",
     tanggal: new Date().toISOString().split("T")[0],
+    userEmail: "",
   });
 
   const handleSubmit = async (e) => {

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { Pencil, Trash2, Mail, MapPin, Shield, User } from "lucide-react";
 
 const wilayahLabels = {
-  jogja: "D.I. Yogyakarta",
+  jogja: "Yogyakarta",
   manado: "Kota Manado",
   umum: "Umum / Pusat",
 };

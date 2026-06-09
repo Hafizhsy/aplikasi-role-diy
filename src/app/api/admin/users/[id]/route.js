@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getKeycloakAdminConfig } from "@/lib/auth";
 
-// TARUH DI LUAR BIAR BISA DIBACA SEMUA FUNGSI
-const BASE_URL = `http://localhost:8080/admin/realms/pemda`;
-const CLIENT_UUID = "3a117525-0efc-4396-9851-0616ec7010a9";
+const { adminBaseUrl, clientUuid } = getKeycloakAdminConfig();
 
 // --- FUNGSI UPDATE (PUT) ---
 export async function PUT(req, { params }) {
@@ -23,17 +22,21 @@ export async function PUT(req, { params }) {
     };
 
     // 1. Update Wilayah
-    await fetch(`${BASE_URL}/users/${id}`, {
+    const updateUserRes = await fetch(`${adminBaseUrl}/users/${id}`, {
       method: "PUT",
       headers,
       body: JSON.stringify({ attributes: { wilayah: [wilayah] } }),
     });
+    if (!updateUserRes.ok) {
+      const errorText = await updateUserRes.text();
+      return NextResponse.json({ error: `Keycloak: ${errorText}` }, { status: updateUserRes.status });
+    }
 
     // 2. Bersihkan Role Lama
-    const oldRolesRes = await fetch(`${BASE_URL}/users/${id}/role-mappings/clients/${CLIENT_UUID}`, { headers });
+    const oldRolesRes = await fetch(`${adminBaseUrl}/users/${id}/role-mappings/clients/${clientUuid}`, { headers });
     const oldRoles = await oldRolesRes.json();
     if (oldRoles.length > 0) {
-      await fetch(`${BASE_URL}/users/${id}/role-mappings/clients/${CLIENT_UUID}`, {
+      await fetch(`${adminBaseUrl}/users/${id}/role-mappings/clients/${clientUuid}`, {
         method: "DELETE",
         headers,
         body: JSON.stringify(oldRoles),
@@ -41,9 +44,9 @@ export async function PUT(req, { params }) {
     }
 
     // 3. Pasang Role Baru
-    const roleRes = await fetch(`${BASE_URL}/clients/${CLIENT_UUID}/roles/${role}`, { headers });
+    const roleRes = await fetch(`${adminBaseUrl}/clients/${clientUuid}/roles/${role}`, { headers });
     const roleData = await roleRes.json();
-    await fetch(`${BASE_URL}/users/${id}/role-mappings/clients/${CLIENT_UUID}`, {
+    await fetch(`${adminBaseUrl}/users/${id}/role-mappings/clients/${clientUuid}`, {
       method: "POST",
       headers,
       body: JSON.stringify([{ id: roleData.id, name: roleData.name }]),
@@ -65,7 +68,7 @@ export async function DELETE(req, { params }) {
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/users/${id}`, {
+    const res = await fetch(`${adminBaseUrl}/users/${id}`, {
       method: "DELETE",
       headers: { 
         Authorization: `Bearer ${session.accessToken}`,
